@@ -1,8 +1,7 @@
-import streamlit as st
+importar fluxo de luz como rua
 import sqlite3
 import pandas as pd
-from datetime import datetime
-
+de data e hora importar data e hora
 # ==============================================================================
 # 1. CONFIGURAÇÃO DA PÁGINA E BANCO DE DADOS (SQLite)
 # ==============================================================================
