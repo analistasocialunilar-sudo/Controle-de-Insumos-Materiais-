@@ -1,7 +1,8 @@
-importar fluxo de luz como rua
+import streamlit as st
 import sqlite3
 import pandas as pd
-de data e hora importar data e hora
+from datetime import datetime
+
 # ==============================================================================
 # 1. CONFIGURAÇÃO DA PÁGINA E BANCO DE DADOS (SQLite)
 # ==============================================================================
@@ -13,7 +14,7 @@ st.set_page_config(
 
 DB_NAME = "estoque_farmacia.db"
 
-# Lista de Pacientes extraída da imagem e atualizada com as enfermeiras responsáveis
+# Lista de Pacientes extraída e atualizada com as enfermeiras responsáveis
 PACIENTES_RAW = [
     {"nome": "MARCIA RODRIGUES RIBEIRO", "telefone": "(74)991-984-281", "programa": "PCP"},
     {"nome": "SILVANA APARECIDA SILVA DE MELO", "telefone": "(87)8174-0027", "programa": "PCP"},
@@ -40,7 +41,6 @@ PACIENTES_RAW = [
 # Monta a lista final com atribuição automática das Enfermeiras de Referência
 PACIENTES_INICIAIS = []
 for p in PACIENTES_RAW:
-    # Regra: Se for Perolla Jasmin Viana -> Nara Armentano, caso contrário -> Amanda Ellen Bezerra dos Santos
     if "PEROLA JASMIN" in p["nome"].upper():
         enfermeira = "Nara Armentano"
     else:
@@ -59,7 +59,7 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Tabela de Produtos (Medicamentos/Insumos)
+    # Tabela de Produtos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS produtos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -99,7 +99,7 @@ def init_db():
         )
     ''')
 
-    # Carrega ou atualiza os pacientes no banco de dados
+    # Popula o banco se a tabela estiver vazia
     cursor.execute("SELECT COUNT(*) FROM pacientes")
     if cursor.fetchone()[0] == 0:
         for p in PACIENTES_INICIAIS:
@@ -308,7 +308,7 @@ if "🤝 3. Dispensação (Saídas)" in abas_nomes:
         df_pacientes = pd.read_sql_query("SELECT * FROM pacientes ORDER BY nome_paciente ASC", conn)
 
         if df_produtos.empty:
-            st.error("⚠️️ Sem estoque disponível na farmácia para dispensação.")
+            st.error("⚠️ Sem estoque disponível na farmácia para dispensação.")
         elif df_pacientes.empty:
             st.warning("Nenhum paciente cadastrado.")
         else:
@@ -321,7 +321,6 @@ if "🤝 3. Dispensação (Saídas)" in abas_nomes:
                 with c1:
                     pac_sel = st.selectbox("Selecione o Paciente *", lista_nomes_pacientes)
                     
-                    # Recupera Enfermeira, Telefone e Programa associados ao paciente
                     dados_pac = df_pacientes[df_pacientes["nome_paciente"] == pac_sel].iloc[0]
                     enf_ref = dados_pac["enfermeiro_referencia"]
                     prog_pac = dados_pac["programa"]
